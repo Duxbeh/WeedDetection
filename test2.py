@@ -8,7 +8,7 @@ from vimba import *
 import cv2
 import vimba
 
-st = True
+status = True
 
 
 class Recordor:
@@ -28,7 +28,7 @@ class Recordor:
         key = cv2.waitKey(1)
         if key == ENTER_KEY_CODE:
             self.shutdown_event.set()
-            st = False
+            status = False
             return
 
         elif frame.get_status() == FrameStatus.Complete:
@@ -89,7 +89,7 @@ class Recordor:
                     self._cam.TriggerSoftware.run()
                     # Delay between images can be adjusted or removed entirely
                     time.sleep(8)
-                    if not st:
+                    if not status:
                         break
                 self._cam.stop_streaming()
 
