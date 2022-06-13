@@ -1,2 +1,2 @@
 # Reference
-alliedvision/vimbaPython : https://github.com/alliedvision/VimbaPython.git
+alliedvision/vimbaPython : https://github.com/alliedvision/VimbaPython
