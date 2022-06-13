@@ -98,10 +98,17 @@ def write_image(frame_queue: queue.Queue):
         # Get an element from the queue.
         frame, id = frame_queue.get()
         cv2.imwrite(f'/Users/admin/Desktop/pic/image_{id}.jpg', frame)
+        im = cv2.imread(f'/Users/admin/Desktop/pic/image_{id}.jpg')
+        img_rgb = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        img_list.append(img_rgb)
+        if frame_queue.qsize() == 0:
+            result = model(img_list)
+            result.save()
+            break
         # let the queue know we are finished with this element so the main thread can figure out
         # when the queue is finished completely
         frame_queue.task_done()
-
+    frame_queue.task_done()
 
 def main():
     #num_pics = 10
