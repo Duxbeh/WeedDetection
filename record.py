@@ -94,6 +94,9 @@ class Recordor:
                 self._cam.stop_streaming()
 
 def write_image(frame_queue: queue.Queue):
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path='C:/Users/admin/Desktop/VimbaPython/DCW-main'
+                                                                '/YOLOv5/models/weightV5/YOLOv5l/best.pt')
+    img_list = []
     while True:
         # Get an element from the queue.
         frame, id = frame_queue.get()
