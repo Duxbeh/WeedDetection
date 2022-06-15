@@ -75,10 +75,7 @@ class Recordor:
         self._cam.DeviceLinkThroughputLimit.set('450000000')
 
     def record_images(self):
-        global st
-        # This method assumes software trigger is desired. Free run image acquisition would work
-        # similarly to get higher fps from the camera
-
+        global status
         with vimba.Vimba.get_instance():
             with self._cam:
                 self._setup_camera()
