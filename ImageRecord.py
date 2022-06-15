@@ -85,7 +85,7 @@ class Recordor:
                 while st:
                     self._cam.TriggerSoftware.run()
                     # Delay between images can be adjusted or removed entirely
-                    time.sleep(8)
+                    time.sleep(0.1)
                     if not status:
                         break
                 self._cam.stop_streaming()
