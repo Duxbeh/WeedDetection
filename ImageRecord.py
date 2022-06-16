@@ -35,7 +35,11 @@ class Recordor:
             print('{} acquired {}'.format(cam, frame), flush=True)
 
             msg = 'Stream from \'{}\'. Press <Enter> to stop stream.'
-            cv2.imshow(msg.format(cam.get_name()), frame.as_opencv_image())
+            
+            opencv_image = frame.as_opencv_image()
+            resize_frame = cv2.resize(opencv_image, (640, 640))
+            cv2.imshow(msg.format(cam.get_name()), resize_frame)
+            
         # Hand used frame back to Vimba, so it can store the next image in this memory
         cam.queue_frame(frame)
 
