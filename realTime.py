@@ -9,7 +9,6 @@ import numpy as np
 
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='C:/Users/admin/Desktop/DCW-main'
                                                             '/YOLOv5/models/weightV5/YOLOv5l/best.pt')
-status = True
 
 
 def print_preamble():
@@ -150,12 +149,10 @@ class Handler:
         self.shutdown_event = threading.Event()
 
     def __call__(self, cam: Camera, frame: Frame):
-        global status
         ENTER_KEY_CODE = 13
         key = cv2.waitKey(1)
         if key == ENTER_KEY_CODE:
             self.shutdown_event.set()
-            status = False
             return
 
         elif frame.get_status() == FrameStatus.Complete:
@@ -188,11 +185,7 @@ def main():
             handler = Handler()
             cam.start_streaming(handler=handler, buffer_count=10)
             handler.shutdown_event.wait()
-            while status:
-                cam.TriggerSoftware.run()
-                time.sleep(0.1)
-                if not status:
-                    break
+            cam.TriggerSoftware.run()
 
 
 if __name__ == '__main__':
