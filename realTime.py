@@ -160,17 +160,17 @@ class Handler:
             msg = 'Stream from \'{}\'. Press <Enter> to stop stream.'
             start_time = time()
 
-            frame = frame.as_opencv_image()
-            frame = cv2.resize(frame, (640, 640))
-            results = score_frame(frame)
-            frame = plot_boxes(results, frame)
+            opencv_frame = frame.as_opencv_image()
+            resize_frame = cv2.resize(opencv_frame, (640, 640))
+            results = score_frame(resize_frame)
+            final_frame = plot_boxes(results, resize_frame)
 
             end_time = time()
             fps = 1 / np.round(end_time - start_time, 2)
 
-            cv2.putText(frame, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
-            cv2.imshow(msg.format(cam.get_name()), frame)
-        # cam.queue_frame(frame)
+            cv2.putText(final_frame, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+            cv2.imshow(msg.format(cam.get_name()), final_frame)
+         cam.queue_frame(frame)
 
 
 def main():
