@@ -10,6 +10,7 @@ import numpy as np
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='C:/Users/admin/Desktop/DCW-main'
                                                             '/YOLOv5/models/weightV5/YOLOv5l/best.pt')
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def print_preamble():
     print('///////////////////////////////////////////////////////')
@@ -73,17 +74,22 @@ def setup_camera(cam: Camera):
         # Enable auto exposure time setting if camera supports it
         cam.ExposureAuto.set('Off')
         cam.ExposureMode.set('Timed')
-        cam.ExposureTime.set('45448.000')
+        cam.ExposureTime.set('13996.768')
 
         # setting the color
         cam.BalanceWhiteAuto.set('Continuous')
         cam.Hue.set('0.00')
         cam.Saturation.set('1.00')
         cam.Gamma.set('0.70')
+
         # setting image resolution (affects acquisition frame rate)
         # range of height (8-2056), range of width (8-2464)
         cam.Height.set('2056')
         cam.Width.set('2464')
+
+        # setting the binning reduce the res
+        #cam.BinningHorizontal.set('2')
+        #cam.BinningVertical.set('2')
 
         # setting pixel format
         cam.set_pixel_format(PixelFormat.Bgr8)
@@ -103,8 +109,14 @@ def setup_camera(cam: Camera):
 
 
 def score_frame(frame):
+    """
+        Takes a single frame as input, and scores the frame using yolo5 model.
+        :param frame: input frame in numpy/list/tuple format.
+        :return: Labels and Coordinates of objects detected by model in the frame.
+        """
     global model
-    model.to('cpu')
+    global device
+    model.to(device)
     frame = [frame]
     results = model(frame)
     labels, cord = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
@@ -159,7 +171,6 @@ class Handler:
             print('{} acquired {}'.format(cam, frame), flush=True)
             msg = 'Stream from \'{}\'. Press <Enter> to stop stream.'
             start_time = time()
-
             opencv_frame = frame.as_opencv_image()
             resize_frame = cv2.resize(opencv_frame, (640, 640))
             results = score_frame(resize_frame)
@@ -170,7 +181,7 @@ class Handler:
 
             cv2.putText(final_frame, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
             cv2.imshow(msg.format(cam.get_name()), final_frame)
-         cam.queue_frame(frame)
+        cam.queue_frame(frame)
 
 
 def main():
@@ -186,6 +197,7 @@ def main():
             cam.start_streaming(handler=handler, buffer_count=10)
             handler.shutdown_event.wait()
             cam.TriggerSoftware.run()
+            cam.stop_streaming()
 
 
 if __name__ == '__main__':
