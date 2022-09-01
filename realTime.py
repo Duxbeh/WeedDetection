@@ -2,13 +2,16 @@ import threading
 import sys
 import cv2
 import torch
+import json
+import os
+import time
 from typing import Optional
 from vimba import *
 from time import time
 import numpy as np
 
-model = torch.hub.load('ultralytics/yolov5', 'custom', path='C:/Users/admin/Desktop/DCW-main'
-                                                            '/YOLOv5/models/weightV5/YOLOv5l/best.pt')
+#model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')
+model = torch.hub.load('/home/nvidia/DCW-main/YOLOv5', 'custom', path='bestS.pt', source='local')
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -84,12 +87,12 @@ def setup_camera(cam: Camera):
 
         # setting image resolution (affects acquisition frame rate)
         # range of height (8-2056), range of width (8-2464)
-        cam.Height.set('2056')
-        cam.Width.set('2464')
+        #cam.Height.set('2056')
+        #cam.Width.set('2464')
 
         # setting the binning reduce the res
-        #cam.BinningHorizontal.set('2')
-        #cam.BinningVertical.set('2')
+        cam.BinningHorizontal.set('2')
+        cam.BinningVertical.set('2')
 
         # setting pixel format
         cam.set_pixel_format(PixelFormat.Bgr8)
@@ -116,9 +119,17 @@ def score_frame(frame):
         """
     global model
     global device
+    i = 0
+    while(os.path.exists("js_data/data%s.json"%i)):
+        i += 1
     model.to(device)
     frame = [frame]
     results = model(frame)
+    #results.save()
+    parsed = json.loads(results.pandas().xyxy[0].to_json(orient="records"))
+    f = open('js_data/data%s.json'%i, 'w')
+    json.dump(parsed, f)
+    f.close()
     labels, cord = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
     return labels, cord
 
@@ -175,15 +186,13 @@ class Handler:
             resize_frame = cv2.resize(opencv_frame, (640, 640))
             results = score_frame(resize_frame)
             final_frame = plot_boxes(results, resize_frame)
-
             end_time = time()
             fps = 1 / np.round(end_time - start_time, 2)
 
             cv2.putText(final_frame, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
             cv2.imshow(msg.format(cam.get_name()), final_frame)
         cam.queue_frame(frame)
-
-
+        
 def main():
     print_preamble()
     cam_id = parse_args()
@@ -198,6 +207,7 @@ def main():
             handler.shutdown_event.wait()
             cam.TriggerSoftware.run()
             cam.stop_streaming()
+	   
 
 
 if __name__ == '__main__':
